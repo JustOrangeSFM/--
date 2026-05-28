@@ -3,7 +3,7 @@ const navLinks = document.querySelector('.nav-links');
 
 if (burger && navLinks) {
     burger.addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); 
         navLinks.classList.toggle('active');
     });
 
