@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История робототехники | Интерактивная шкала</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .card-img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid rgba(123, 159, 255, 0.08);
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition-base);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-soft);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .card h3 {
+            padding: 1.2rem 1.2rem 0.5rem;
+            color: var(--accent-warm);
+            font-size: 1.3rem;
+        }
+        
+        .card p {
+            padding: 0 1.2rem 1.2rem;
+            color: var(--text-secondary);
+        }
+        
+        /* СТИЛИ ДЛЯ ШКАЛЫ */
+        .timeline-scroll {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 2rem 0 3rem;
+            cursor: grab;
+            scroll-behavior: smooth;
+        }
+        
+        .timeline-scroll:active {
+            cursor: grabbing;
+        }
+        
+        .timeline-track {
+            position: relative;
+            width: max-content;
+            min-width: 100%;
+            display: flex;
+            gap: 2rem;
+            padding: 1rem 2rem;
+        }
+        
+        .timeline-axis {
+            position: absolute;
+            top: 65px;
+            left: 2rem;
+            right: 2rem;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-soft), var(--accent-warm), var(--accent-soft));
+            border-radius: 3px;
+            box-shadow: 0 0 8px var(--accent-soft);
+        }
+        
+        .timeline-node {
+            position: relative;
+            flex: 0 0 auto;
+            width: 200px;
+            cursor: pointer;
+        }
+        
+        .node-dot {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 18px;
+            background: var(--accent-warm);
+            border: 2px solid var(--bg-dark);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(183, 148, 244, 0.3);
+            transition: var(--transition-fast);
+            z-index: 2;
+        }
+        
+        .timeline-node:hover .node-dot {
+            transform: translateX(-50%) scale(1.3);
+            background: var(--accent-soft);
+            box-shadow: 0 0 0 5px rgba(123, 159, 255, 0.4);
+        }
+        
+        .node-year {
+            position: absolute;
+            top: 88px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: var(--bg-deep);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            white-space: nowrap;
+            color: var(--accent-warm);
+            z-index: 2;
+        }
+        
+        .node-card {
+            margin-top: 125px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(123, 159, 255, 0.15);
+            transition: var(--transition-base);
+        }
+        
+        .timeline-node:hover .node-card {
+            transform: translateY(-5px);
+            background: var(--bg-card-hover);
+            border-color: var(--accent-soft);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .node-title {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--accent-soft);
+            margin-bottom: 0.5rem;
+        }
+        
+        .node-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+        
+        .timeline-node.active .node-dot {
+            background: #ff9f4a;
+            box-shadow: 0 0 0 6px rgba(255, 159, 74, 0.3);
+            transform: translateX(-50%) scale(1.2);
+        }
+        
+        .timeline-node.active .node-card {
+            border-color: #ff9f4a;
+            background: rgba(255, 159, 74, 0.1);
+        }
+        
+        /* ДЕТАЛЬНАЯ ПАНЕЛЬ С КАРТИНКОЙ */
+        .timeline-detail {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--accent-warm);
+            transition: var(--transition-base);
+        }
+        
+        .timeline-detail h3 {
+            color: var(--accent-warm);
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-detail p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .detail-image {
+            margin-top: 1rem;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            max-width: 300px;
+        }
+        
+        .detail-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: var(--radius-sm);
+        }
+        
+        .timeline-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .timeline-scroll::-webkit-scrollbar-track {
+            background: var(--bg-deep);
+            border-radius: 10px;
+        }
+        
+        .timeline-scroll::-webkit-scrollbar-thumb {
+            background: var(--accent-soft);
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .timeline-node {
+                width: 170px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="../index.html">Главная</a></li>
+                <li><a href="yesterday.html" class="active">История робототехники</a></li>
+                <li><a href="today.html">Современные роботы</a></li>
+                <li><a href="tomorrow.html">Перспективы робототехники</a></li>
+                <li><a href="gallery.html">Галерея</a></li>
+            </ul>
+            <div class="burger"><span></span><span></span><span></span></div>
+        </nav>
+    </header>
+
+    <section style="padding-top: 100px;">
+        <h1 class="section-title">📜 История робототехники 📜</h1>
+
+        <!-- ИНТЕРАКТИВНАЯ ШКАЛА -->
+        <div class="timeline-scroll" id="timelineScroll">
+            <div class="timeline-track" id="timelineTrack">
+                <div class="timeline-axis"></div>
+                
+                <div class="timeline-node" data-year="1954" data-title="Первый программируемый робот" data-full="Джордж Девол запатентовал первый программируемый манипулятор. Это изобретение заложило основу для всех промышленных роботов. Устройство могло запоминать и повторять последовательности движений." data-img="../images/unimate.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">1954</div>
+                    <div class="node-card">
+                        <div class="node-title">🤖 Программируемый манипулятор</div>
+                        <div class="node-desc">Патент Девола — начало эры промышленных роботов</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="1961" data-title="Unimate" data-full="Первый промышленный робот Unimate был установлен на заводе General Motors. Робот весил 1800 кг, работал на гидравлике и занимался литьем под давлением. Он стал символом автоматизации производства." data-img="../images/unimate.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">1961</div>
+                    <div class="node-card">
+                        <div class="node-title">🏭 Unimate</div>
+                        <div class="node-desc">Первый промышленный робот на заводе GM</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="1970" data-title="Расцвет промышленной робототехники" data-full="Компания FANUC начала массовое производство промышленных роботов. Япония становится мировым лидером в роботостроении. Роботы начали активно использоваться в автомобилестроении и электронике." data-img="../images/fanuc.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">1970-е</div>
+                    <div class="node-card">
+                        <div class="node-title">🇯🇵 Эра FANUC</div>
+                        <div class="node-desc">Массовое производство, Япония — лидер</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="1997" data-title="Марсоход и шахматы" data-full="Марсоход Sojourner совершил посадку на Марс, проработав 83 дня. В том же году суперкомпьютер Deep Blue от IBM победил чемпиона мира Гарри Каспарова в шахматы — триумф искусственного интеллекта." data-img="../images/mars-rover.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">1997</div>
+                    <div class="node-card">
+                        <div class="node-title">🚀 Sojourner + Deep Blue</div>
+                        <div class="node-desc">Первый марсоход и победа ИИ над чемпионом</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="2000" data-title="ASIMO" data-full="Honda представила ASIMO — первого человекоподобного робота, способного ходить, бегать и подниматься по лестнице. ASIMO умел узнавать лица, голоса и жесты, стал символом гуманоидной робототехники." data-img="../images/asimo.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">2000</div>
+                    <div class="node-card">
+                        <div class="node-title">👤 ASIMO от Honda</div>
+                        <div class="node-desc">Первый ходячий гуманоид</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="2011" data-title="Watson" data-full="Суперкомпьютер IBM Watson победил людей в игре Jeopardy!. Watson демонстрировал понимание естественного языка и стал предтечей современных ИИ-ассистентов." data-img="../images/watson.webp">
+                    <div class="node-dot"></div>
+                    <div class="node-year">2011</div>
+                    <div class="node-card">
+                        <div class="node-title">🧠 IBM Watson</div>
+                        <div class="node-desc">ИИ побеждает в Jeopardy!</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-node" data-year="2020" data-title="Роботы-андроиды" data-full="Boston Dynamics выпускает Atlas — самого продвинутого гуманоидного робота, способного делать сальто. Роботы-доставщики, хирургические роботы (da Vinci) и дроны становятся обыденностью." data-img="../images/atlas.jpg">
+                    <div class="node-dot"></div>
+                    <div class="node-year">2020+</div>
+                    <div class="node-card">
+                        <div class="node-title">🤸 Atlas и современность</div>
+                        <div class="node-desc">Роботы-андроиды, ИИ, автоматизация</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ДЕТАЛЬНАЯ ПАНЕЛЬ — здесь появляется текст + картинка после клика -->
+        <div class="timeline-detail" id="timelineDetail">
+            <h3>👆 Нажмите на любое событие</h3>
+            <p>Кликните по карточке или кружку на временной шкале, чтобы увидеть подробное описание и иллюстрацию.</p>
+        </div>
+
+
+    <script>
+        // бургер-меню
+        const burger = document.querySelector('.burger');
+        const navLinks = document.querySelector('.nav-links');
+        if (burger) {
+            burger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
+
+        // ИНТЕРАКТИВНАЯ ШКАЛА — картинка появляется ТОЛЬКО под текстом после клика
+        const nodes = document.querySelectorAll('.timeline-node');
+        const detailPanel = document.getElementById('timelineDetail');
+
+        function updateDetail(year, title, fullDesc, imgSrc) {
+            let imageHtml = '';
+            if (imgSrc) {
+                imageHtml = `
+                    <div class="detail-image">
+                        <img src="${imgSrc}" alt="${title}" onerror="this.onerror=null; this.parentElement.style.display='none'">
+                    </div>
+                `;
+            }
+            detailPanel.innerHTML = `
+                <h3>📅 ${year} — ${title}</h3>
+                <p>${fullDesc}</p>
+                ${imageHtml}
+            `;
+        }
+
+        nodes.forEach(node => {
+            node.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nodes.forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+                
+                const year = node.getAttribute('data-year');
+                const title = node.getAttribute('data-title');
+                const fullDesc = node.getAttribute('data-full');
+                const imgSrc = node.getAttribute('data-img');
+                updateDetail(year, title, fullDesc, imgSrc);
+                
+                detailPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+
+        // активируем первое событие при загрузке
+        if (nodes.length > 0) {
+            nodes[0].classList.add('active');
+            updateDetail(
+                nodes[0].getAttribute('data-year'),
+                nodes[0].getAttribute('data-title'),
+                nodes[0].getAttribute('data-full'),
+                nodes[0].getAttribute('data-img')
+            );
+        }
+
+        // горизонтальный скролл мышкой
+        const scrollContainer = document.getElementById('timelineScroll');
+        if (scrollContainer) {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            
+            scrollContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                scrollContainer.style.cursor = 'grabbing';
+                startX = e.pageX - scrollContainer.offsetLeft;
+                scrollLeft = scrollContainer.scrollLeft;
+            });
+            
+            scrollContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+            });
+            
+            scrollContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                scrollContainer.style.cursor = 'grab';
+            });
+            
+            scrollContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - scrollContainer.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                scrollContainer.scrollLeft = scrollLeft - walk;
+            });
+        }
+    </script>
+</body>
+</html>
